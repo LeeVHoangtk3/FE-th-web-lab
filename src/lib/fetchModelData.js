@@ -1,17 +1,13 @@
-/**
- * fetchModel - Fetch a model from the web server.
- *
- * @param {string} url      The URL to issue the GET request.
- * @returns {Promise<any>}  The JSON-decoded response.
- */
+const BACKEND_URL = "https://8myhyc-3001.csb.app";
+
 function fetchModel(url) {
-  return fetch(url)
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error(`Server returned ${res.status}`);
-      }
-      return res.json();
-    });
+  // 2. Nối BACKEND_URL vào trước url
+  return fetch(BACKEND_URL + url).then((res) => {
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status}`);
+    }
+    return res.json();
+  });
 }
 
 export default fetchModel;
