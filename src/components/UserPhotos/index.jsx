@@ -109,7 +109,7 @@ function UserPhotos() {
         <Card key={photo._id} sx={{ mb: 3 }}>
           <CardMedia
             component="img"
-            image={`${process.env.REACT_APP_API_URL || process.env.PUBLIC_URL}/images/${photo.file_name}`}
+            image={photo.file_name && photo.file_name.startsWith('data:') ? photo.file_name : `${process.env.PUBLIC_URL}/images/${photo.file_name}`}
             alt={photo.file_name}
           />
           <CardContent>

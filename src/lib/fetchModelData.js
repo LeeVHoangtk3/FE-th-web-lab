@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://8myhyc-3001.csb.app";
+const BACKEND_URL = process.env.REACT_APP_API_URL || "";
 
 function fetchModel(url) {
   // 2. Nối BACKEND_URL vào trước url
