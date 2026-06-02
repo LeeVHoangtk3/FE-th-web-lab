@@ -9,6 +9,9 @@ import {
   ListItem,
   ListItemText,
   Typography,
+  Box,
+  TextField,
+  Button,
 } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 
@@ -26,6 +29,7 @@ function UserPhotos() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [newComments, setNewComments] = useState({});
 
   useEffect(() => {
     setLoading(true);
@@ -42,6 +46,46 @@ function UserPhotos() {
         setLoading(false);
       });
   }, [userId, setTitle]);
+
+  const handleCommentChange = (photoId, value) => {
+    setNewComments((prev) => ({
+      ...prev,
+      [photoId]: value,
+    }));
+  };
+
+  const handleAddComment = (e, photoId) => {
+    e.preventDefault();
+    const commentText = newComments[photoId];
+    if (!commentText || commentText.trim() === '') return;
+
+    fetch(`/commentsOfPhoto/${photoId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ comment: commentText }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || 'Failed to add comment');
+        }
+        // Re-fetch photos to display the newly added comment immediately
+        return fetchModel(`/photosOfUser/${userId}`);
+      })
+      .then((photoData) => {
+        setPhotos(photoData);
+        // Clear the text field for this photo
+        setNewComments((prev) => ({
+          ...prev,
+          [photoId]: '',
+        }));
+      })
+      .catch((err) => {
+        alert('Error adding comment: ' + err.message);
+      });
+  };
 
   if (loading) {
     return <Typography>Loading photos...</Typography>;
@@ -65,7 +109,7 @@ function UserPhotos() {
         <Card key={photo._id} sx={{ mb: 3 }}>
           <CardMedia
             component="img"
-            image={`${process.env.PUBLIC_URL}/images/${photo.file_name}`}
+            image={`${process.env.REACT_APP_API_URL || process.env.PUBLIC_URL}/images/${photo.file_name}`}
             alt={photo.file_name}
           />
           <CardContent>
@@ -98,6 +142,19 @@ function UserPhotos() {
                 </React.Fragment>
               ))}
             </List>
+
+            <Box component="form" onSubmit={(e) => handleAddComment(e, photo._id)} sx={{ mt: 2, display: 'flex', gap: 1 }}>
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="Write a comment..."
+                value={newComments[photo._id] || ''}
+                onChange={(e) => handleCommentChange(photo._id, e.target.value)}
+              />
+              <Button type="submit" variant="contained" size="small">
+                Post
+              </Button>
+            </Box>
           </CardContent>
         </Card>
       ))}
